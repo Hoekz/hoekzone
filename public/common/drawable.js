@@ -141,8 +141,8 @@ export class Drawable extends Emitter {
 
     this.submitButton = this.overlay.button('Submit', () => this.emit('submit', this.image()), {
       left: this.bounds.x,
+      right: this.bounds.x + this.bounds.width,
       bottom: 10,
-      width: this.bounds.width,
       height: 40,
       backgroundColor: '#cccccc',
       color: '#333333',

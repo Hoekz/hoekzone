@@ -100,7 +100,6 @@ class Overlay {
     }
 
     Object.assign(button.style, {
-      position: 'absolute',
       height: '45px',
       border: 'none',
       borderRadius: '5px',
@@ -154,7 +153,6 @@ class Overlay {
     input.value = get();
     input.addEventListener('input', (e) => set(e.target.value), false);
     Object.assign(input.style, {
-      position: 'absolute',
       height: '45px',
       border: 'none',
       borderRadius: '5px',
@@ -194,7 +192,6 @@ class Overlay {
     image.src = src;
     image.alt = alt;
     Object.assign(image.style, {
-      position: 'absolute',
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',

@@ -1,4 +1,4 @@
-[
+export const prompts = [
   "A fun thing to think about during mediocre sex",
   "Come up with a title for an adult version of any classic video game",
   "What a dog sext might say",
@@ -9,5 +9,4 @@
   "A terrible thing to remember during sex",
   "At the most bizarre sex parties, people don’t wear masks. They wear ________",
   "What most people don’t understand about elephant sex",
-
 ]

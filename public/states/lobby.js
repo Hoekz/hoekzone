@@ -67,7 +67,6 @@ export class Lobby extends Emitter {
         left: 10,
         right: 10,
         top: 60,
-        fontSize: 'max(16px, 4vw)',
       }),
       ...Object.entries(Lobby.gameList)
       .map(([name, icon], i) => this.app.overlay.button(name, () => {

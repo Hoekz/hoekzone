@@ -74,7 +74,8 @@ export class Depictable extends Emitter {
         top: 60,
         left: this.app.canvas.width / 2,
         transform: 'translateX(-50%)',
-        width: this.app.canvas.width - 20,
+        maxWidth: 400,
+        width: 'calc(100% - 20px)',
       }),
     ]);
   }

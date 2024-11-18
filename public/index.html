@@ -32,6 +32,7 @@
         font-family: 'Playwrite GB J', Helvetica, Arial, sans-serif;
         text-transform: uppercase;
         font-size: min(4vw, 16px);
+        box-sizing: border-box;
       }
 
       h1 {
@@ -55,10 +56,12 @@
         z-index: 1000;
       }
 
-      button {
+      button, input {
         position: absolute;
         text-transform: uppercase;
         z-index: 1000;
+        max-width: 400px;
+        margin: 0 auto;
       }
 
       .icon {

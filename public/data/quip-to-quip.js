@@ -1,4 +1,4 @@
-[
+export const prompts = [
   "A bad campaign slogan for a congressperson",
   "A bad first line for your presidential inauguration speech",
   "A bad thing to say to a cop as he writes you a speeding ticket",
