@@ -4,80 +4,146 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Hoekzone</title>
+    <meta name="description" content="Hoekzone">
+    <link rel="icon" href="/favicon.png">
 
-    <!-- update the version number as needed -->
     <script defer src="/__/firebase/11.0.1/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
     <script defer src="/__/firebase/11.0.1/firebase-auth-compat.js"></script>
     <script defer src="/__/firebase/11.0.1/firebase-firestore-compat.js"></script>
     <script defer src="/__/firebase/11.0.1/firebase-functions-compat.js"></script>
     <script defer src="/__/firebase/11.0.1/firebase-storage-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
     <script defer src="/__/firebase/init.js?useEmulator=true"></script>
 
     <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
+      @import url('https://fonts.googleapis.com/css2?family=Playwrite+GB+J:ital,wght@0,100..400;1,100..400&display=swap');
+
+      body {
+        width: 100vw;
+        height: 100vh;
+        background-color: #131343;
+        background-image: linear-gradient(150deg, #131343 20%, #0f0f2d 80%);
+        color: #cccccc;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      * {
+        font-family: 'Playwrite GB J', Helvetica, Arial, sans-serif;
+        text-transform: uppercase;
+        font-size: min(4vw, 16px);
+      }
+
+      h1 {
+        font-size: min(5vw, 20px);
+      }
+
+      p {
+        font-size: min(4vw, 16px);
+      }
+
+      #canvas, #overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      #overlay {
+        z-index: 1000;
+      }
+
+      button {
+        position: absolute;
+        text-transform: uppercase;
+        z-index: 1000;
+      }
+
+      .icon {
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        margin: auto;
+        height: 100%;
+        text-indent: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        display: block;
+        background-size: 40px 40px;
+        height: 40px;
+        width: 40px;
+        background-repeat: no-repeat;
+        background-position: center center;
+      }
+
+      .icon.clear {
+        background-image: url('/icons/clear.svg');
+      }
+
+      .icon.draw {
+        background-image: url('/icons/draw.svg');
+      }
+
+      .icon.line {
+        background-image: url('/icons/line.svg');
+      }
+
+      .icon.gear {
+        background-image: url('/icons/gear.svg');
       }
     </style>
   </head>
   <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
-    </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
+    <canvas id="canvas"></canvas>
+    <div id="overlay"></div>
+    <script type="module">
+      import { App } from './app.js'
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        firebase.firestore().doc('/foo/bar').get().then(() => { });
-        firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+      const app = firebase.app()
+      const auth = firebase.auth()
 
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
+      async function signin() {
+        if (auth.isSignInWithEmailLink(window.location.href)) {
+          let email = window.localStorage.getItem('emailForSignIn') || prompt('Please provide your email')
+
+          try {
+            await auth.signInWithEmailLink(email, window.location.href)
+            window.localStorage.removeItem('emailForSignIn')
+            // remove the email from the URL
+            window.history.replaceState({}, document.title, window.location.pathname)
+          } catch (error) {
+            console.error(error)
+          }
+        } else {
+          const email = prompt('Please provide your email')
+          window.localStorage.setItem('emailForSignIn', email)
+          await auth.sendSignInLinkToEmail(email, {
+            url: window.location.href,
+            handleCodeInApp: true
+          })
         }
+      }
+  
+      document.addEventListener('DOMContentLoaded', async function() {
+        const overlay = document.getElementById('overlay')
+        const canvas = document.getElementById('canvas')
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+        
+        auth.onAuthStateChanged(user => {
+          if (user) {
+            window.history.replaceState({}, document.title, window.location.pathname)
+            const app = new App({ user, canvas, overlay })
+            app.create()
+          } else {
+            signin()
+          }
+        })
       });
     </script>
   </body>
