@@ -1,97 +1,79 @@
-import { Emitter } from '/common/emitter.js';
+import { Component } from '/common/component.js';
 import { Screen } from '/common/screen.js';
+import { button, text, image, iconButton } from '/common/element.js';
 
-export class Lobby extends Emitter {
+export class Lobby extends Component {
   static gameList = {
     depictable: 'draw',
   };
 
+  states = ['lobby'];
+
   constructor(app) {
-    super();
+    super('Lobby');
     this.app = app;
-    this.display = null;
   }
 
-  create() {
-    this.display = new Screen({
+  lobby() {
+    const mode = this.app.get('mode');
+    const isAdmin = this.app.get('user.admin');
+    let elements = [];
+    
+    if (mode === 'host') {
+      elements = this.shared();
+    } else {
+      const userSettings = iconButton('gear', {
+        right: 10,
+        top: 10,
+      }, { click: () => this.app.state = 'userSettings' });
+      const lobbyContent = isAdmin ? this.admin() : this.user();
+      elements = [userSettings, ...lobbyContent];
+    }
+    
+    console.log('elements', elements);
+    return new Screen({
       canvas: this.app.canvas,
       overlay: this.app.overlay,
       title: 'Lobby',
+      elements,
     });
-
-    const mode = this.app.get('mode');
-    const isAdmin = this.app.get('user.admin');
-    
-    if (mode === 'host') {
-      return this.shared();
-    }
-    
-    this.display.create([
-      this.app.overlay.iconButton('gear', () => {
-        this.app.setState('userSettings');
-      }, {
-        right: 10,
-        top: 10,
-      }, 'Change your name and avatar'),
-    ]);
-
-    if (isAdmin) {
-      this.admin();
-    } else {
-      this.user();
-    }
-  }
-
-  destroy() {
-    this.display?.destroy();
   }
 
   shared() {
-    this.display.create([
-      this.display.overlay.button('Join', () => {
-        this.app.set('user.admin', false);
-        this.app.set('user.ready', true);
-        this.app.setState('depictable');
-      }, {
-        left: 10,
-        right: 10,
-        top: 60,
-      }),
-    ]);
+    const users = [];
+
+    // TODO: Add users to lobby
+
+    return [];
   }
 
   admin() {
-    this.app.set('user.ready', true);
-    this.display.create([
-      this.app.overlay.text('You\'re in charge! Choose a game:', {
-        left: 10,
-        right: 10,
+    return [
+      text('You\'re in charge! Choose a game:', {
+        left: '50%',
+        transform: 'translateX(-50%)',
         top: 60,
       }),
-      ...Object.entries(Lobby.gameList)
-      .map(([name, icon], i) => this.app.overlay.button(name, () => {
-        this.emit('link', name);
-      }, {
-        left: 10,
-        right: 10,
+      ...Object.entries(Lobby.gameList).map(([name, icon], i) => button(name, {
+        left: '50%',
+        transform: 'translateX(-50%)',
         top: i * 60 + 120,
-      }, { icon }))
-    ]);
+      }, { click: () => this.emit('link', name) }, { icon }))
+    ];
   }
 
   user() {
-    this.app.set('user.ready', true);
-    this.display.create([
-      this.app.overlay.text('Sit Tight! The game will start shortly.', {
-        left: 10,
-        right: 10,
+    return [
+      text('Sit Tight! The game will start shortly.', {
+        left: '50%',
+        transform: 'translateX(-50%)',
         top: 60,
       }),
-      this.app.overlay.image(this.app.get('user.image'), 'You look great!', {
+      image(this.app.get('user.image'), {
         top: 120,
         left: this.app.canvas.width / 2,
         transform: 'translateX(-50%)',
-      }),
-    ]);
+      }, { altText: 'You look great!' }),
+    ];
   }
 }

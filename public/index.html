@@ -37,10 +37,26 @@
 
       h1 {
         font-size: min(5vw, 20px);
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
       }
 
       p {
         font-size: min(4vw, 16px);
+        position: absolute;
+      }
+
+      img {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: min(calc(100vw - 20px), 500px);
       }
 
       #canvas, #overlay {
@@ -60,8 +76,32 @@
         position: absolute;
         text-transform: uppercase;
         z-index: 1000;
-        max-width: 400px;
+        width: 100%;
+        max-width: 600px;
         margin: 0 auto;
+        height: 45px;
+        border: none;
+        border-radius: 5px;
+        background-color: #cccccc;
+        color: #333333;
+      }
+
+      button {
+        cursor: pointer;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+      }
+
+      button.active {
+        border: 2px solid #cccccc;
+      }
+
+      input {
+        font-size: 14px;
+        padding: 5px;
       }
 
       .icon {

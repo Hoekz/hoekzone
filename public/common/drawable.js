@@ -1,4 +1,5 @@
 import { Emitter } from './emitter.js';
+import { button, iconButton } from './element.js';
 
 function isPointOnLineSegment(pt, a, b) {
   if (pt.x > Math.max(a.x, b.x) || pt.x < Math.min(a.x, b.x) || pt.y > Math.max(a.y, b.y) || pt.y < Math.min(a.y, b.y)) {
@@ -98,13 +99,11 @@ export class Drawable extends Emitter {
   static padding = { top: 60, right: 10, bottom: 120, left: 10 };
   static ratio = { width: 4, height: 5 };
 
-  constructor({ canvas, overlay, colors, title, withFill, svg }) {
+  constructor({ canvas, overlay, colors, title, withFill, svg, events }) {
     super();
     this.active = false;
     this.canvas = canvas;
     this.bounds = computeBounds(canvas);
-    this.colors = colors;
-    this.activeColor = this.colors[0];
     this.title = title;
     this.drawing = false;
     this.lines = [];
@@ -112,41 +111,55 @@ export class Drawable extends Emitter {
     this.ctx = canvas.getContext('2d');
     this.overlay = overlay;
     this.withFill = !!withFill;
-
+    
     if (svg) {
       Object.assign(this, parseSVG(svg, this.bounds));
+    }
+    
+    this.colors = colors ?? this.colors ?? ['#000000'];
+    this.activeColor = this.colors[0];
+
+    if (events) {
+      this.on('submit', events.submit);
     }
   }
 
   create() {
-    this.overlay.title(this.title);
+    this.overlay.innerHTML = `<h1>${this.title}</h1>`;
 
-    this.clearButton = this.overlay.iconButton('clear', this.clear, {
+    this.clearButton = iconButton('clear', {
       left: this.bounds.x,
       top: this.bounds.y + this.bounds.height + 10,
       backgroundColor: '#cccccc',
-    }, 'clear');
+    }, {}, { attrs: { title: 'clear' } });
+    this.clearButton.create(this.overlay);
 
-    this.colorButtons = this.colors.map((color, i) => this.overlay.iconButton('circle', () => this.setColor(color), {
-      left: this.bounds.x + this.bounds.width - 50 * (i + 1),
-      top: this.bounds.y + this.bounds.height + 10,
-      backgroundColor: color,
-    }, `select color ${color}`));
+    this.colorButtons = this.colors.map((color, i) => {
+      const btn = iconButton('circle', {
+        left: this.bounds.x + this.bounds.width - 50 * (i + 1),
+        top: this.bounds.y + this.bounds.height + 10,
+        backgroundColor: color,
+      }, {}, { attrs: { title: `select color ${color}`, color } });
+      btn.create(this.overlay);
+      return btn;
+    });
 
-    this.modeButton = this.overlay.iconButton('draw', this.toggleMode, {
+    this.modeButton = iconButton('draw', {
       left: this.bounds.x + this.bounds.width - 50 * (this.colors.length + 1),
       top: this.bounds.y + this.bounds.height + 10,
       backgroundColor: '#cccccc',
-    }, 'toggle mode');
+    }, {}, { attrs: { title: 'toggle mode' } });
+    this.modeButton.create(this.overlay);
 
-    this.submitButton = this.overlay.button('Submit', () => this.emit('submit', this.image()), {
+    this.submitButton = button('Submit', {
       left: this.bounds.x,
-      right: this.bounds.x + this.bounds.width,
+      width: this.bounds.width,
       bottom: 10,
       height: 40,
       backgroundColor: '#cccccc',
       color: '#333333',
     });
+    this.submitButton.create(this.overlay);
 
     this.attachEvents();
     this.setColor(this.activeColor);
@@ -163,16 +176,21 @@ export class Drawable extends Emitter {
     this.overlay.removeEventListener('touchmove', this.move);
     this.overlay.removeEventListener('touchend', this.end);
 
-    this.overlay.remove(this.clearButton);
-    this.colorButtons.forEach(button => this.overlay.remove(button));
-    this.overlay.remove(this.modeButton);
-    this.overlay.remove(this.submitButton);
+    this.clearButton.destroy();
+    this.modeButton.destroy();
+    this.submitButton.destroy();
+    this.colorButtons.forEach(button => button.destroy());
 
     cancelAnimationFrame(this.render);
     this.active = false;
   }
 
   attachEvents() {
+    this.clearButton.on('click', this.clear);
+    this.modeButton.on('click', this.toggleMode);
+    this.submitButton.on('click', () => this.emit('submit', this.image()));
+    this.colorButtons.forEach((button, i) => button.on('click', () => this.setColor(this.colors[i])));
+
     this.overlay.addEventListener('mousedown', this.start);
     this.overlay.addEventListener('mousemove', this.move);
     this.overlay.addEventListener('mouseup', this.end);
@@ -216,10 +234,7 @@ export class Drawable extends Emitter {
     }
   }
 
-  end = (e) => {
-    this.drawing = false;
-    console.log('end', this.lines);
-  }
+  end = () => this.drawing = false;
 
   render = () => {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -230,8 +245,6 @@ export class Drawable extends Emitter {
 
     requestAnimationFrame(this.render);
 
-    this.ctx.fillStyle = 'black';
-    this.ctx.fillRect(this.bounds.x - 5, this.bounds.y - 5, this.bounds.width + 10, this.bounds.height + 10);
     this.ctx.fillStyle = 'white';
     this.ctx.fillRect(this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height);
 
@@ -244,6 +257,10 @@ export class Drawable extends Emitter {
       points.slice(1).forEach(point => this.ctx.lineTo(point.x, point.y));
       this.ctx.stroke();
     });
+
+    this.ctx.strokeStyle = 'black';
+    this.ctx.lineWidth = 10;
+    this.ctx.strokeRect(this.bounds.x - 5, this.bounds.y - 5, this.bounds.width + 10, this.bounds.height + 10);
   }
 
   clear = () => {
@@ -252,15 +269,18 @@ export class Drawable extends Emitter {
 
   setColor = (color) => {
     this.colorButtons.forEach(button => {
-      button.style.outline = button.getAttribute('title').includes(color) ? '2px solid white' : 'none';
+      if (button.props.attrs.color === color) {
+        button.element.classList.add('active');
+      } else {
+        button.element.classList.remove('active');
+      }
     });
     this.activeColor = color;
   }
 
   toggleMode = () => {
-    console.log('toggle mode');
     this.mode = this.mode === 'draw' ? 'line' : 'draw';
-    this.modeButton.setIcon(this.mode);
+    this.modeButton.get('i').className = `icon ${this.mode}`;
   }
 
   image = () => {

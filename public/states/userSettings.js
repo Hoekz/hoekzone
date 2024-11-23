@@ -1,78 +1,49 @@
-import { Emitter } from '/common/emitter.js';
 import { Screen } from '/common/screen.js';
 import { Drawable } from '/common/drawable.js';
+import { Component } from '/common/component.js';
+import { input, button } from '../common/element.js';
 
-export class UserSettings extends Emitter {
+export class UserSettings extends Component {
+  states = ['name', 'image'];
+
   constructor(app) {
-    super();
+    super('User Settings');
     this.app = app;
-    this.state = 'name';
-    this.display = null;
-  }
-
-  create() {
-    this.setState('name');
-  }
-
-  destroy() {
-    this.display?.destroy();
-  }
-
-  setState(state) {
-    this.state = state;
-    this.display?.destroy();
-    this.display = null;
-
-    switch (state) {
-      case 'name':
-        this.name();
-        break;
-      case 'image':
-        this.image();
-        break;
-    }
   }
 
   name() {
-    this.display = new Screen({
+    return new Screen({
       canvas: this.app.canvas,
       overlay: this.app.overlay,
       title: 'Name Yourself!',
+      elements: [
+        input('Name', this.app.value('user.name', ''), {
+          left: '50%',
+          transform: 'translateX(-50%)',
+          top: 60,
+        }),
+        button('Save', {
+          left: '50%',
+          transform: 'translateX(-50%)',
+          top: 120,
+        }, { click: () => this.state = 'image' }),
+      ],
     });
-
-    this.display.create([
-      this.app.overlay.input('Name', {
-        get: () => this.app.get('user.name') || '',
-        set: (value) => this.app.set('user.name', value),
-      }, {
-        left: 10,
-        right: 10,
-        top: 60,
-      }),
-      this.app.overlay.button('Save', () => {
-        this.setState('image');
-      }, {
-        left: 10,
-        right: 10,
-        top: 120,
-      }),
-    ]);
   }
 
   image() {
-    this.display = new Drawable({
+    return new Drawable({
       canvas: this.app.canvas,
       overlay: this.app.overlay,
       colors: this.app.get('colors') || ['#ec5436', '#f7b733'],
       title: 'Draw Yourself!',
-      svg: this.app.get('user.image') || null,
+      svg: this.app.get('user.image') || '',
+      events: {
+        submit: (image) => {
+          this.app.set('user.image', image);
+          this.emit('link', 'lobby');
+        },
+      },
     });
-
-    this.display.on('submit', (image) => {
-      this.app.set('user.image', image);
-      this.emit('done');
-    });
-
-    this.display.create();
   }
 }
