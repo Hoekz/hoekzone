@@ -3,6 +3,10 @@ export class Emitter {
     this.listeners = {};
   }
 
+  destroy() {
+    this.listeners = {};
+  }
+
   on(event, handler) {
     this.listeners[event] = this.listeners[event] || [];
     this.listeners[event].push(handler);
@@ -18,6 +22,26 @@ export class Emitter {
   emit(event, ...args) {
     if (this.listeners[event]) {
       this.listeners[event].forEach(handler => handler(...args));
+    }
+  }
+}
+
+export class IntervalEmitter extends Emitter {
+  constructor(interval) {
+    super();
+    this.interval = interval;
+    this.intervalId = null;
+  }
+
+  start() {
+    this.stop();
+    this.intervalId = setInterval(() => this.emit('tick'), this.interval);
+  }
+
+  stop() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
     }
   }
 }

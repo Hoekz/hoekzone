@@ -1,193 +1,265 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Hoekzone</title>
-    <meta name="description" content="Hoekzone">
-    <link rel="icon" href="/favicon.png">
 
-    <script defer src="/__/firebase/11.0.1/firebase-app-compat.js"></script>
-    <script defer src="/__/firebase/11.0.1/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/11.0.1/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/11.0.1/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/11.0.1/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hoekzone</title>
+  <meta name="description" content="Hoekzone">
+  <link rel="icon" href="/favicon.png">
 
-    <style media="screen">
-      @import url('https://fonts.googleapis.com/css2?family=Playwrite+GB+J:ital,wght@0,100..400;1,100..400&display=swap');
+  <script defer src="/__/firebase/11.0.1/firebase-app-compat.js"></script>
+  <script defer src="/__/firebase/11.0.1/firebase-auth-compat.js"></script>
+  <script defer src="/__/firebase/11.0.1/firebase-firestore-compat.js"></script>
+  <script defer src="/__/firebase/11.0.1/firebase-functions-compat.js"></script>
+  <script defer src="/__/firebase/11.0.1/firebase-storage-compat.js"></script>
+  <script defer src="/__/firebase/init.js?useEmulator=true"></script>
 
-      body {
-        width: 100vw;
-        height: 100vh;
-        background-color: #131343;
-        background-image: linear-gradient(150deg, #131343 20%, #0f0f2d 80%);
-        color: #cccccc;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
+  <style media="screen">
+    @import url('https://fonts.googleapis.com/css2?family=Playwrite+GB+J:ital,wght@0,100..400;1,100..400&display=swap');
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      background-color: #131343;
+      background-image: linear-gradient(150deg, #131343 20%, #0f0f2d 80%);
+      color: #cccccc;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    * {
+      font-family: 'Playwrite GB J', Helvetica, Arial, sans-serif;
+      text-transform: uppercase;
+      font-size: min(4vw, 16px);
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: min(5vw, 20px);
+      margin: 0;
+      padding: 0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+    }
+
+    p {
+      font-size: min(4vw, 16px);
+      position: absolute;
+    }
+
+    img {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: min(calc(100vw - 20px), 500px);
+    }
+
+    #canvas,
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #overlay {
+      z-index: 1000;
+    }
+
+    button,
+    input {
+      position: absolute;
+      text-transform: uppercase;
+      z-index: 1000;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      height: 45px;
+      border: none;
+      border-radius: 5px;
+      background-color: #cccccc;
+      color: #333333;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    button.active {
+      border: 2px solid #cccccc;
+    }
+
+    input {
+      font-size: 14px;
+      padding: 5px;
+    }
+
+    .icon {
+      display: block;
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto;
+      height: 100%;
+      text-indent: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      display: block;
+      background-size: 40px 40px;
+      height: 40px;
+      width: 40px;
+      background-repeat: no-repeat;
+      background-position: center center;
+    }
+
+    .icon.clear {
+      background-image: url('/icons/clear.svg');
+    }
+
+    .icon.draw {
+      background-image: url('/icons/draw.svg');
+    }
+
+    .icon.line {
+      background-image: url('/icons/line.svg');
+    }
+
+    .icon.gear {
+      background-image: url('/icons/gear.svg');
+    }
+
+    .animated-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    svg.animate-drawing {
+      animation-name: fade;
+      animation-timing-function: linear;
+      animation-fill-mode: forwards;
+      animation-duration: var(--total-duration);
+    }
+
+    @keyframes fade {
+      0% {
+        opacity: 0;
       }
 
-      * {
-        font-family: 'Playwrite GB J', Helvetica, Arial, sans-serif;
-        text-transform: uppercase;
-        font-size: min(4vw, 16px);
-        box-sizing: border-box;
+      10% {
+        opacity: 1;
       }
 
-      h1 {
-        font-size: min(5vw, 20px);
-        margin: 0;
-        padding: 0;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        text-align: center;
+      90% {
+        opacity: 1;
       }
 
-      p {
-        font-size: min(4vw, 16px);
-        position: absolute;
+      100% {
+        opacity: 0;
+      }
+    }
+
+    svg.animate-drawing polyline {
+      --length: 1000;
+      --duration: 5s;
+      --delay: 0s;
+
+      stroke-dasharray: var(--length);
+      stroke-dashoffset: var(--length);
+      animation-name: draw;
+      animation-timing-function: linear;
+      animation-fill-mode: forwards;
+      animation-duration: var(--duration);
+      animation-delay: var(--delay);
+    }
+
+    @keyframes draw {
+      0% {
+        stroke-dashoffset: var(--length);
       }
 
-      img {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 100%;
-        max-width: min(calc(100vw - 20px), 500px);
+      50% {
+        stroke-dashoffset: 0;
       }
 
-      #canvas, #overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
+      100% {
+        stroke-dashoffset: 0;
       }
+    }
+  </style>
+</head>
 
-      #overlay {
-        z-index: 1000;
-      }
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="overlay"></div>
+  <script type="module">
+    import { App } from './app.js'
 
-      button, input {
-        position: absolute;
-        text-transform: uppercase;
-        z-index: 1000;
-        width: 100%;
-        max-width: 600px;
-        margin: 0 auto;
-        height: 45px;
-        border: none;
-        border-radius: 5px;
-        background-color: #cccccc;
-        color: #333333;
-      }
+    const app = firebase.app()
+    const auth = firebase.auth()
 
-      button {
-        cursor: pointer;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
-      }
+    async function signin() {
+      if (auth.isSignInWithEmailLink(window.location.href)) {
+        let email = window.localStorage.getItem('emailForSignIn') || prompt('Please provide your email')
 
-      button.active {
-        border: 2px solid #cccccc;
-      }
-
-      input {
-        font-size: 14px;
-        padding: 5px;
-      }
-
-      .icon {
-        display: block;
-        position: absolute;
-        left: 0;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        margin: auto;
-        height: 100%;
-        text-indent: 100%;
-        white-space: nowrap;
-        overflow: hidden;
-        display: block;
-        background-size: 40px 40px;
-        height: 40px;
-        width: 40px;
-        background-repeat: no-repeat;
-        background-position: center center;
-      }
-
-      .icon.clear {
-        background-image: url('/icons/clear.svg');
-      }
-
-      .icon.draw {
-        background-image: url('/icons/draw.svg');
-      }
-
-      .icon.line {
-        background-image: url('/icons/line.svg');
-      }
-
-      .icon.gear {
-        background-image: url('/icons/gear.svg');
-      }
-    </style>
-  </head>
-  <body>
-    <canvas id="canvas"></canvas>
-    <div id="overlay"></div>
-    <script type="module">
-      import { App } from './app.js'
-
-      const app = firebase.app()
-      const auth = firebase.auth()
-
-      async function signin() {
-        if (auth.isSignInWithEmailLink(window.location.href)) {
-          let email = window.localStorage.getItem('emailForSignIn') || prompt('Please provide your email')
-
-          try {
-            await auth.signInWithEmailLink(email, window.location.href)
-            window.localStorage.removeItem('emailForSignIn')
-            // remove the email from the URL
-            window.history.replaceState({}, document.title, window.location.pathname)
-          } catch (error) {
-            console.error(error)
-          }
-        } else {
-          const email = prompt('Please provide your email')
-          window.localStorage.setItem('emailForSignIn', email)
-          await auth.sendSignInLinkToEmail(email, {
-            url: window.location.href,
-            handleCodeInApp: true
-          })
+        try {
+          await auth.signInWithEmailLink(email, window.location.href)
+          window.localStorage.removeItem('emailForSignIn')
+          // remove the email from the URL
+          window.history.replaceState({}, document.title, window.location.pathname)
+        } catch (error) {
+          console.error(error)
         }
-      }
-  
-      document.addEventListener('DOMContentLoaded', async function() {
-        const overlay = document.getElementById('overlay')
-        const canvas = document.getElementById('canvas')
-        canvas.width = window.innerWidth
-        canvas.height = window.innerHeight
-        
-        auth.onAuthStateChanged(user => {
-          if (user) {
-            window.history.replaceState({}, document.title, window.location.pathname)
-            const app = new App({ user, canvas, overlay })
-            app.create()
-          } else {
-            signin()
-          }
+      } else {
+        const email = prompt('Please provide your email')
+        window.localStorage.setItem('emailForSignIn', email)
+        await auth.sendSignInLinkToEmail(email, {
+          url: window.location.href,
+          handleCodeInApp: true
         })
-      });
-    </script>
-  </body>
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async function () {
+      const overlay = document.getElementById('overlay')
+      const canvas = document.getElementById('canvas')
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          window.history.replaceState({}, document.title, window.location.pathname)
+          const app = new App({ user, canvas, overlay })
+          app.create()
+        } else {
+          signin()
+        }
+      })
+    });
+  </script>
+</body>
+
 </html>

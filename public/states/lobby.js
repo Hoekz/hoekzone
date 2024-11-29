@@ -1,6 +1,7 @@
 import { Component } from '/common/component.js';
 import { Screen } from '/common/screen.js';
 import { button, text, image, iconButton } from '/common/element.js';
+import { AnimatedSVG } from '/common/animated-svg.js';
 
 export class Lobby extends Component {
   static gameList = {
@@ -29,8 +30,22 @@ export class Lobby extends Component {
       const lobbyContent = isAdmin ? this.admin() : this.user();
       elements = [userSettings, ...lobbyContent];
     }
-    
-    console.log('elements', elements);
+
+    elements.push(new AnimatedSVG({
+      svgs: [
+        '/drawings/house.svg',
+        '/drawings/tree.svg',
+        '/drawings/sunset.svg',
+        '/drawings/flower.svg',
+        '/drawings/balloons.svg',
+        '/drawings/mountains.svg',
+        '/drawings/paw-print.svg',
+        '/drawings/controller.svg',
+      ],
+      mode: 'random',
+      interval: 8000,
+    }))
+
     return new Screen({
       canvas: this.app.canvas,
       overlay: this.app.overlay,

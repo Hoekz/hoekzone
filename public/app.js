@@ -43,7 +43,7 @@ export class App extends Component {
 
   set(key, value) {
     this.store[key] = value;
-    console.log('set', key);
+    console.log('set', key, value);
   }
 
   get(key) {

@@ -19,4 +19,22 @@ export class Screen extends Emitter {
         this.elements.forEach(element => element.destroy());
         this.elements = [];
     }
+
+    remove(target) {
+        const index = this.elements.indexOf(target);
+        if (index !== -1) {
+            this.elements.splice(index, 1);
+            target.destroy();
+        }
+    }
+
+    add(element) {
+        this.elements.push(element);
+        element.create(this.overlay);
+    }
+
+    replace(target, replacement) {
+        this.remove(target);
+        this.add(replacement);
+    }
 }

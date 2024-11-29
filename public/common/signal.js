@@ -68,6 +68,10 @@ export function computed(fn) {
   return new Computed(fn);
 }
 
+export function lens(signal, transform) {
+  return computed(() => transform(signal.get()));
+}
+
 export function event(element, event, transform, defaultValue = null) {
   const signal = signal(defaultValue);
   element.addEventListener(event, (e) => signal.set(transform?.(e) ?? e));

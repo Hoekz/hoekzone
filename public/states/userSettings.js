@@ -37,7 +37,7 @@ export class UserSettings extends Component {
       overlay: this.app.overlay,
       colors: this.app.get('colors') || ['#ec5436', '#f7b733'],
       title: 'Draw Yourself!',
-      svg: this.app.get('user.image') || '',
+      image: this.app.get('user.image') || '',
       events: {
         submit: (image) => {
           this.app.set('user.image', image);

@@ -5,14 +5,23 @@ import { Signal } from './signal.js';
 export class Element extends Emitter {
   constructor(tag, props) {
     super();
-    this.tag = tag;
+    if (tag instanceof HTMLElement || tag instanceof SVGElement) {
+      this.element = tag;
+      this.tag = tag.tagName.toLowerCase();
+    } else {
+      this.tag = tag;
+      this.element = null;
+    }
     this.props = props;
-    this.element = null;
     this.subscriptions = [];
   }
 
   create(parent = null) {
-    this.element = document.createElement(this.tag);
+    const alreadyExists = !!this.element;
+
+    if (!this.element) {
+      this.element = document.createElement(this.tag);
+    }
 
     if (parent) {
       parent.appendChild(this.element);
@@ -48,13 +57,14 @@ export class Element extends Emitter {
       this.subscriptions.push(this.props.text.on((text) => this.element.textContent = text));
     } else if (this.props.text instanceof Element) {
       this.props.text.create(this.element);
-    } else {
+    } else if (this.props.text) {
       this.element.textContent = this.props.text;
     }
 
     if (this.props.children) {
       this.props.children.forEach(child => child.create(this.element));
     }
+
 
     if (this.props.value instanceof Signal) {
       this.subscriptions.push(this.props.value.on((value) => this.element.value = value));
@@ -148,4 +158,19 @@ export function icon(name, style = {}, props) {
 export function iconButton(iconName, style = {}, events = {}, props = {}) {
   const btn = button(icon(iconName), { ...style, width: 45 }, events, { ...props });
   return btn;
+}
+
+export async function from(url, props = {}) {
+  const response = await fetch(url);
+  const text = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`GET ${url}: ${text}`);
+  }
+
+  const doc = document.createElement('div');
+  doc.innerHTML = text;
+  const html = doc.firstChild;
+
+  return new Element(html, props);
 }
